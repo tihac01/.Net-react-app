@@ -42,7 +42,7 @@ public class UpdateAttendance
             var attendance = activity.Attendees.FirstOrDefault(x => x.AppUser.UserName == user.UserName);
 
             if (attendance != null && hostUserName == user.UserName) 
-                activity.IsCancelled = !activity.IsCancelled;
+                activity.IsCanceled = !activity.IsCanceled;
 
             if (attendance != null && hostUserName != user.UserName)
                 activity.Attendees.Remove(attendance);
