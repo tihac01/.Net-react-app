@@ -10,5 +10,11 @@ namespace API.Controllers
         {
             return HandelResult(await Mediator.Send(new Details.Query { UserName = username }));
         }
+
+        [HttpPut]
+        public async Task<IActionResult> EditAppUser(string username)
+        {
+            return HandelResult(await Mediator.Send(new Details.Query { UserName = username }));
+        }
     }
 }
