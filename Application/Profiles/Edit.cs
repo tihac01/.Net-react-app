@@ -1,6 +1,7 @@
 ﻿using Application.Core;
+using Application.Interfaces;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -9,32 +10,46 @@ namespace Application.Profiles;
 
 public class Edit
 {
-    public class Query : IRequest<Result<Profile>>
+    public class Command : IRequest<Result<Unit>>
     {
-        public string UserName { get; set; }
+        public string DisplayName { get; set; }
+        public string Bio { get; set; } = string.Empty;
     }
 
-    public class Handler : IRequestHandler<Query, Result<Profile>>
+    public class CommandValidator : AbstractValidator<Command>
+    {
+        public CommandValidator()
+        {
+            RuleFor(x => x.DisplayName).NotEmpty();
+        }
+    }
+
+    public class Handler : IRequestHandler<Command, Result<Unit>>
     {
 
         private readonly DataContext _context;
-        private readonly IMapper _mapper;
+        private readonly IUserAccessor _userAccessor;
 
-        public Handler(DataContext context, IMapper mapper)
+        public Handler(DataContext context, IUserAccessor userAccessor)
         {
             _context = context;
-            _mapper = mapper;
+            _userAccessor = userAccessor;
         }
 
-        public async Task<Result<Profile>> Handle(Query request, CancellationToken cancellationToken)
+        public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
         {
-            var user = await _context.Users
-                .ProjectTo<Profile>(_mapper.ConfigurationProvider)
-                .SingleOrDefaultAsync(x => x.UserName == request.UserName);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == _userAccessor.GetUserName());
 
             if (user == null) return null;
 
-            return Result<Profile>.Success(user);
+            user.Bio = request.Bio ?? user.Bio;
+            user.DisplayName = request.DisplayName ?? user.DisplayName;
+
+            var success = await _context.SaveChangesAsync() > 0;
+
+            if (success) return Result<Unit>.Success(Unit.Value);
+
+            return Result<Unit>.Failure("Problem updating profile");
         }
     }
 }

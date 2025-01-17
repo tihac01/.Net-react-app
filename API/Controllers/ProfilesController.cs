@@ -12,9 +12,9 @@ namespace API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> EditAppUser(string username)
+        public async Task<IActionResult> EditAppUser(Edit.Command command)
         {
-            return HandelResult(await Mediator.Send(new Details.Query { UserName = username }));
+            return HandelResult(await Mediator.Send(command));
         }
     }
 }
