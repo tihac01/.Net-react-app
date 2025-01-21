@@ -63,7 +63,7 @@ public class DataContext : IdentityDbContext<AppUser>
             b.HasOne(uf => uf.Target)
                 .WithMany(au => au.Followers)
                 .HasForeignKey(uf => uf.TargetId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
         });
     }
 }
